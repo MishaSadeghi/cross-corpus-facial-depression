@@ -75,15 +75,16 @@ Run in order:
 | Script | Description |
 |--------|-------------|
 | `01_aggregate_edaic_video_features.py` | Aggregate E-DAIC raw OpenFace frame-level CSVs → one row per participant |
-| `02_holdout_regression_phq8.py` | Within-corpus PHQ-8 regression on ProposedCorpus (fixed holdout) |
-| `within_corpus_regression/nested_cv_phq8_regression.py` | 5-fold nested CV for within-corpus regression |
+| `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on ProposedCorpus (fixed holdout, all 7 targets) |
+| `within_corpus_regression/nested_cv_phq8_regression.py` | Within-corpus multi-scale regression (5-fold nested CV, all 7 targets) |
+| `02_holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
 | `03_cross_corpus_video_regression.py` | Cross-corpus regression (Exp A, B, C1, C2) |
 | `04_repeated_holdout_regression.py` | Repeated holdout stability analysis |
-| `05_cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels) |
-| `06_cross_corpus_regression_v2.py` | Cross-corpus regression v2 with within-corpus baselines |
+| `05_cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
+| `06_cross_corpus_regression_v2.py` | Cross-corpus regression v2 with within-corpus baselines (D1, D2) |
 | `07_cross_corpus_classification_phq8.py` | Cross-corpus classification (PHQ-8 labels, Setting 2) |
-| `08_full_to_full_regression.py` | Full-corpus regression (no held-out split) |
-| `09_full_to_full_classification.py` | Full-corpus classification (no held-out split) |
+| `08_full_to_full_regression.py` | Full-corpus regression without held-out split |
+| `09_full_to_full_classification.py` | Full-corpus classification without held-out split |
 | `10_shap_cross_corpus_cls.py` | SHAP beeswarm plots for the two best cross-corpus classifiers |
 | `11_result_visualizations.py` | AUC heatmap, domain-gap slope chart, Setting 1 vs 2 scatter |
 
@@ -91,6 +92,34 @@ Run in order:
 
 `shared_regression_pipeline.py` — imported by all scripts. Contains data loaders,
 feature selection, the full regressor/classifier grid, and evaluation utilities.
+
+---
+
+## Regression Targets
+
+The within-corpus regression scripts (`holdout_phq8_regression.py`,
+`nested_cv_phq8_regression.py`) evaluate all 7 depression severity scales available
+in ProposedCorpus:
+
+| Column | Scale | Administration |
+|--------|-------|----------------|
+| `phq_8` | PHQ-8 | Remote self-report (before lab visit) |
+| `phq_9` | PHQ-9 | In-lab self-report |
+| `ads.1` | CES-D / ADS | In-lab clinician-administered |
+| `HRSD_6.1` | HRSD-6 | In-lab clinician-administered |
+| `HRSD_17.1` | HRSD-17 | In-lab clinician-administered |
+| `HRSD_21.1` | HRSD-21 | In-lab clinician-administered |
+| `HRSD_24.1` | HRSD-24 | In-lab clinician-administered |
+
+PHQ-8 is the only scale shared with E-DAIC and is therefore used as the cross-corpus
+regression target. The multi-scale within-corpus results characterise how scale
+reliability (remote self-report vs. clinician-administered) affects predictability
+from facial features. Targets can be selected via `--targets`:
+
+```bash
+python within_corpus_regression/nested_cv_phq8_regression.py \
+    --phase latency --targets phq_8 phq_9 ads.1
+```
 
 ---
 
