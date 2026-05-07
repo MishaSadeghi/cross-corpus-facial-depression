@@ -106,19 +106,16 @@ in ProposedCorpus:
 | `phq_8` | PHQ-8 | Remote self-report (before lab visit) |
 | `phq_9` | PHQ-9 | In-lab self-report |
 | `ads.1` | CES-D / ADS | In-lab clinician-administered |
-| `HRSD_6.1` | HRSD-6 | In-lab clinician-administered |
 | `HRSD_17.1` | HRSD-17 | In-lab clinician-administered |
-| `HRSD_21.1` | HRSD-21 | In-lab clinician-administered |
-| `HRSD_24.1` | HRSD-24 | In-lab clinician-administered |
 
 PHQ-8 is the only scale shared with E-DAIC and is therefore used as the cross-corpus
-regression target. The multi-scale within-corpus results characterise how scale
-reliability (remote self-report vs. clinician-administered) affects predictability
-from facial features. Targets can be selected via `--targets`:
+regression target. The paper reports within-corpus results for PHQ-8, PHQ-9, CES-D,
+and HRSD-17. The scripts also support HRSD-6, HRSD-21, and HRSD-24 via `--targets`
+but these are not reported in the paper. Targets can be selected via:
 
 ```bash
 python within_corpus_regression/nested_cv_phq8_regression.py \
-    --phase latency --targets phq_8 phq_9 ads.1
+    --phase latency --targets phq_8 phq_9 ads.1 HRSD_17.1
 ```
 
 ---
