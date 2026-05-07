@@ -3,13 +3,13 @@
 =====================================
 Aggregates per-participant frame-level E-DAIC OpenFace 2.1.0 CSVs into a
 single-row-per-participant feature matrix using the same 18 statistical
-functionals as the EmpkinS pipeline — producing directly comparable columns.
+functionals as the ProposedCorpus pipeline — producing directly comparable columns.
 
 Run this ONCE before any cross-corpus script.
 
-Input  : /home/vault/empkins/tpD/D02/processed_data/DAIC_datasets/E-DAIC/
+Input  : <EDAIC_OPENFACE_ROOT from config.py>
            extracted/{ID}_P/features/{ID}_OpenFace2.1.0_Pose_gaze_AUs.csv
-Output : /home/woody/empk/empk004h/D02_dataset/depression_face_analysis/
+Output : <EDAIC_AGGREGATED_PATH from config.py>
            processed_data_stats/edaic_openface_aggregated.csv
 
 Usage:

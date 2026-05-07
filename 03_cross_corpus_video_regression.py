@@ -1,9 +1,9 @@
 """
 03_cross_corpus_video_regression.py
 =====================================
-Cross-corpus PHQ-8 regression: EmpkinS RCT video features ↔ E-DAIC.
+Cross-corpus PHQ-8 regression: ProposedCorpus RCT video features ↔ E-DAIC.
 
-Source domain: EmpkinS emotion_induction_1 / ADK condition
+Source domain: ProposedCorpus emotion_induction_1 / ADK condition
   — chosen for highest classification F1 (0.83) in a passive-observation phase
     that best matches the E-DAIC clinical interview context.
 
@@ -11,10 +11,10 @@ Requires:
   - 01_aggregate_edaic_video_features.py must have been run (E-DAIC aggregated CSV)
 
 Experiments:
-  A. EmpkinS (ALL) → E-DAIC test   (all EmpkinS as train, E-DAIC official test)
-  B. E-DAIC (train+dev) → EmpkinS  (E-DAIC as train, EmpkinS official holdout)
-  C1. EmpkinS train split → E-DAIC test   (uses the fixed 80/20 EmpkinS split)
-  C2. E-DAIC train+dev → EmpkinS test     (symmetric)
+  A. ProposedCorpus (ALL) → E-DAIC test   (all ProposedCorpus as train, E-DAIC official test)
+  B. E-DAIC (train+dev) → ProposedCorpus  (E-DAIC as train, ProposedCorpus official holdout)
+  C1. ProposedCorpus train split → E-DAIC test   (uses the fixed 80/20 ProposedCorpus split)
+  C2. E-DAIC train+dev → ProposedCorpus test     (symmetric)
 
 Feature selection (FDR+RFE — same as repeated holdout v2):
   - FDR-corrected Spearman filter (BH q=0.20, fallback top-20) on train only
@@ -44,6 +44,7 @@ warnings.filterwarnings("ignore")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from shared_regression_pipeline import (
+from config import RESULTS_ROOT, EDAIC_AGGREGATED_PATH
     CATBOOST_AVAILABLE,
     LIGHTGBM_AVAILABLE,
     align_features,
@@ -53,7 +54,7 @@ from shared_regression_pipeline import (
     get_scalers,
     grid_search_regressor,
     load_edaic_data,
-    load_empkins_data,
+    load_proposed_data,
     load_shared_split,
     print_metrics,
     rfe_select_regression,
@@ -69,7 +70,7 @@ if LIGHTGBM_AVAILABLE:
 # OUTPUT
 # ─────────────────────────────────────────────────────────────────────────────
 OUTPUT_BASE = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_regression"
 )
 
@@ -188,7 +189,7 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
 
     print("=" * 80)
     print(f"  CROSS-CORPUS PHQ-8 REGRESSION")
-    print(f"  EmpkinS phase: {phase} | condition: {condition}")
+    print(f"  ProposedCorpus phase: {phase} | condition: {condition}")
     print(f"  Experiments: {experiments}")
     print("=" * 80)
 
@@ -196,9 +197,9 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
     param_grids = get_param_grids()
     scalers     = get_scalers()
 
-    # ── Load EmpkinS data ─────────────────────────────────────────────────────
-    print("\n[1] Loading EmpkinS data …")
-    X_emp, y_emp, ids_emp = load_empkins_data(phase, condition)
+    # ── Load ProposedCorpus data ─────────────────────────────────────────────────────
+    print("\n[1] Loading ProposedCorpus data …")
+    X_emp, y_emp, ids_emp = load_proposed_data(phase, condition)
 
     split_tag = "ALL" if condition == "ALL_CONDITIONS" else condition
     try:
@@ -216,9 +217,9 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
     y_emp_train     = y_emp.loc[y_emp.index.isin(emp_train_idx)]
     y_emp_test      = y_emp.loc[y_emp.index.isin(emp_test_idx)]
 
-    print(f"  EmpkinS train: n={len(y_emp_train)}  "
+    print(f"  ProposedCorpus train: n={len(y_emp_train)}  "
           f"PHQ-8 mean={y_emp_train.mean():.1f}")
-    print(f"  EmpkinS test:  n={len(y_emp_test)}  "
+    print(f"  ProposedCorpus test:  n={len(y_emp_test)}  "
           f"PHQ-8 mean={y_emp_test.mean():.1f}")
 
     # ── Load E-DAIC data ──────────────────────────────────────────────────────
@@ -229,7 +230,7 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         )
     except FileNotFoundError:
         print(f"  ERROR: E-DAIC aggregated features not found at:\n"
-              f"  {'/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/processed_data_stats/edaic_openface_aggregated.csv'}\n"
+              f"  {EDAIC_AGGREGATED_PATH}\n"
               f"  Run 01_aggregate_edaic_video_features.py first!")
         return
 
@@ -247,11 +248,11 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
     summary_rows = []
 
     # ═════════════════════════════════════════════════════════════════════════
-    # EXPERIMENT A: Train EmpkinS (ALL) → Test E-DAIC test set
+    # EXPERIMENT A: Train ProposedCorpus (ALL) → Test E-DAIC test set
     # ═════════════════════════════════════════════════════════════════════════
     if "A" in experiments:
         print(f"\n{'─'*80}")
-        print(f"  EXPERIMENT A: EmpkinS (ALL) → E-DAIC test")
+        print(f"  EXPERIMENT A: ProposedCorpus (ALL) → E-DAIC test")
         print(f"  Transfers structured task biomarkers → clinical interview")
         print(f"{'─'*80}")
 
@@ -259,9 +260,9 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         X_emp_all_aligned, X_daic_test_aligned = align_features(
             X_emp, X_daic_test_raw
         )
-        y_emp_all = y_emp  # use all EmpkinS as training
+        y_emp_all = y_emp  # use all ProposedCorpus as training
 
-        # Impute (fit on EmpkinS ALL)
+        # Impute (fit on ProposedCorpus ALL)
         imputer_A = SimpleImputer(strategy="median")
         X_emp_imp = pd.DataFrame(
             imputer_A.fit_transform(X_emp_all_aligned),
@@ -281,20 +282,20 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         )
         if best_A:
             summary_rows.append({
-                "Experiment": "A: EmpkinS→E-DAIC",
-                "Train": f"EmpkinS all (n={len(y_emp_all)})",
+                "Experiment": "A: ProposedCorpus→E-DAIC",
+                "Train": f"ProposedCorpus all (n={len(y_emp_all)})",
                 "Test":  f"E-DAIC test (n={len(y_daic_test)})",
                 "Best_model": f"{best_A['model_name']}/{best_A['scaler']}",
                 **best_A["metrics"],
             })
 
     # ═════════════════════════════════════════════════════════════════════════
-    # EXPERIMENT B: Train E-DAIC (train+dev) → Test EmpkinS test split
+    # EXPERIMENT B: Train E-DAIC (train+dev) → Test ProposedCorpus test split
     # ═════════════════════════════════════════════════════════════════════════
     if "B" in experiments:
         print(f"\n{'─'*80}")
-        print(f"  EXPERIMENT B: E-DAIC (train+dev) → EmpkinS test")
-        print(f"  Tests which EmpkinS phase interview-trained model works on")
+        print(f"  EXPERIMENT B: E-DAIC (train+dev) → ProposedCorpus test")
+        print(f"  Tests which ProposedCorpus phase interview-trained model works on")
         print(f"{'─'*80}")
 
         X_daic_tr_aligned, X_emp_test_aligned = align_features(
@@ -321,9 +322,9 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         )
         if best_B:
             summary_rows.append({
-                "Experiment": "B: E-DAIC→EmpkinS",
+                "Experiment": "B: E-DAIC→ProposedCorpus",
                 "Train": f"E-DAIC train+dev (n={len(y_daic_tr)})",
-                "Test":  f"EmpkinS test (n={len(y_emp_test)})",
+                "Test":  f"ProposedCorpus test (n={len(y_emp_test)})",
                 "Best_model": f"{best_B['model_name']}/{best_B['scaler']}",
                 **best_B["metrics"],
             })
@@ -333,8 +334,8 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
     # ═════════════════════════════════════════════════════════════════════════
     if "C" in experiments:
         print(f"\n{'─'*80}")
-        print(f"  EXPERIMENT C: Leave-one-corpus-out (EmpkinS train→DAIC test "
-              f"+ DAIC train→EmpkinS test, average)")
+        print(f"  EXPERIMENT C: Leave-one-corpus-out (ProposedCorpus train→DAIC test "
+              f"+ DAIC train→ProposedCorpus test, average)")
         print(f"{'─'*80}")
 
         # Both directions with the official splits
@@ -353,7 +354,7 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
             columns=X_daic_te_aligned.columns
         ).astype(np.float32)
 
-        print("\n  C1: EmpkinS train → E-DAIC test")
+        print("\n  C1: ProposedCorpus train → E-DAIC test")
         _, best_C1 = fit_and_eval(
             models, param_grids, scalers,
             X_emp_tr_imp, y_emp_tr,
@@ -363,8 +364,8 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         )
         if best_C1:
             summary_rows.append({
-                "Experiment": "C1: EmpkinS-train→E-DAIC-test",
-                "Train": f"EmpkinS train (n={len(y_emp_tr)})",
+                "Experiment": "C1: ProposedCorpus-train→E-DAIC-test",
+                "Train": f"ProposedCorpus train (n={len(y_emp_tr)})",
                 "Test":  f"E-DAIC test (n={len(y_daic_test)})",
                 "Best_model": f"{best_C1['model_name']}/{best_C1['scaler']}",
                 **best_C1["metrics"],
@@ -384,7 +385,7 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
             columns=X_emp_te_aligned.columns
         ).astype(np.float32)
 
-        print("\n  C2: E-DAIC train+dev → EmpkinS test")
+        print("\n  C2: E-DAIC train+dev → ProposedCorpus test")
         _, best_C2 = fit_and_eval(
             models, param_grids, scalers,
             X_daic_tr2_imp, y_daic_train,
@@ -394,9 +395,9 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
         )
         if best_C2:
             summary_rows.append({
-                "Experiment": "C2: E-DAIC-train→EmpkinS-test",
+                "Experiment": "C2: E-DAIC-train→ProposedCorpus-test",
                 "Train": f"E-DAIC train+dev (n={len(y_daic_train)})",
-                "Test":  f"EmpkinS test (n={len(y_emp_test)})",
+                "Test":  f"ProposedCorpus test (n={len(y_emp_test)})",
                 "Best_model": f"{best_C2['model_name']}/{best_C2['scaler']}",
                 **best_C2["metrics"],
             })
@@ -424,18 +425,18 @@ def run_cross_corpus(phase: str, condition: str, experiments: list):
 # ─────────────────────────────────────────────────────────────────────────────
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Cross-corpus PHQ-8 regression: EmpkinS ↔ E-DAIC"
+        description="Cross-corpus PHQ-8 regression: ProposedCorpus ↔ E-DAIC"
     )
     parser.add_argument(
         "--phase", default="emotion_induction_1",
         choices=["latency", "emotion_induction_1",
                  "negative_training", "positive_training"],
-        help="EmpkinS phase to use as source (default: emotion_induction_1)"
+        help="ProposedCorpus phase to use as source (default: emotion_induction_1)"
     )
     parser.add_argument(
         "--condition", default="ADK",
         choices=["ADK", "CR", "CRADK", "SHAM", "ALL_CONDITIONS"],
-        help="EmpkinS condition to use (default: ADK)"
+        help="ProposedCorpus condition to use (default: ADK)"
     )
     parser.add_argument(
         "--experiments", nargs="+", default=["A", "B", "C"],

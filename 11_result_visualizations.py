@@ -18,20 +18,21 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
+from config import RESULTS_ROOT
 
 warnings.filterwarnings("ignore")
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 SCID_CSV = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_classification/FINAL_COMPARISON_cls_20260423-180740.csv"
 )
 PHQ8_CSV = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_classification_phq8/FINAL_COMPARISON_phq8cls_20260423-180741.csv"
 )
 OUTPUT_DIR = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_classification/result_plots"
 )
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -49,10 +50,10 @@ CONFIG_LABELS = {
 CONFIGS = list(CONFIG_LABELS.keys())
 
 EXP_LABELS = {
-    "A: EmpkinS-ALL→E-DAIC-test":        "A: Prop.ₐₗₗ→E-DAIC",
-    "C1: EmpkinS-train→E-DAIC-test":     "C1: Prop.→E-DAIC",
-    "B: E-DAIC-ALL→EmpkinS-test":        "B: E-DAIC→Prop.",
-    "D1: EmpkinS-train→EmpkinS-test":    "D1: Prop.→Prop. (within)",
+    "A: ProposedCorpus-ALL→E-DAIC-test":        "A: Prop.ₐₗₗ→E-DAIC",
+    "C1: ProposedCorpus-train→E-DAIC-test":     "C1: Prop.→E-DAIC",
+    "B: E-DAIC-ALL→ProposedCorpus-test":        "B: E-DAIC→Prop.",
+    "D1: ProposedCorpus-train→ProposedCorpus-test":    "D1: Prop.→Prop. (within)",
     "D2: E-DAIC-train→E-DAIC-test":      "D2: E-DAIC→E-DAIC (within)",
 }
 EXP_ORDER = list(EXP_LABELS.keys())
@@ -179,10 +180,10 @@ def plot_slope():
     # E-DAIC direction:   D2 (within) vs B  (cross to Proposed)
     # Use Setting 1 only for clarity
 
-    EXP_D1  = "D1: EmpkinS-train→EmpkinS-test"
-    EXP_C1  = "C1: EmpkinS-train→E-DAIC-test"
+    EXP_D1  = "D1: ProposedCorpus-train→ProposedCorpus-test"
+    EXP_C1  = "C1: ProposedCorpus-train→E-DAIC-test"
     EXP_D2  = "D2: E-DAIC-train→E-DAIC-test"
-    EXP_B   = "B: E-DAIC-ALL→EmpkinS-test"
+    EXP_B   = "B: E-DAIC-ALL→ProposedCorpus-test"
 
     colors = plt.cm.tab10(np.linspace(0, 0.7, len(CONFIGS)))
 
@@ -278,17 +279,17 @@ def plot_setting_scatter():
     merged = merged[merged["Experiment"].isin(EXP_ORDER)]
 
     exp_colors = {
-        "A: EmpkinS-ALL→E-DAIC-test":     "#2166ac",
-        "C1: EmpkinS-train→E-DAIC-test":  "#4dac26",
-        "B: E-DAIC-ALL→EmpkinS-test":     "#d6604d",
-        "D1: EmpkinS-train→EmpkinS-test": "#8073ac",
+        "A: ProposedCorpus-ALL→E-DAIC-test":     "#2166ac",
+        "C1: ProposedCorpus-train→E-DAIC-test":  "#4dac26",
+        "B: E-DAIC-ALL→ProposedCorpus-test":     "#d6604d",
+        "D1: ProposedCorpus-train→ProposedCorpus-test": "#8073ac",
         "D2: E-DAIC-train→E-DAIC-test":   "#878787",
     }
     exp_markers = {
-        "A: EmpkinS-ALL→E-DAIC-test":     "o",
-        "C1: EmpkinS-train→E-DAIC-test":  "s",
-        "B: E-DAIC-ALL→EmpkinS-test":     "^",
-        "D1: EmpkinS-train→EmpkinS-test": "D",
+        "A: ProposedCorpus-ALL→E-DAIC-test":     "o",
+        "C1: ProposedCorpus-train→E-DAIC-test":  "s",
+        "B: E-DAIC-ALL→ProposedCorpus-test":     "^",
+        "D1: ProposedCorpus-train→ProposedCorpus-test": "D",
         "D2: E-DAIC-train→E-DAIC-test":   "P",
     }
 

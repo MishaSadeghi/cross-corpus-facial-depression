@@ -45,16 +45,17 @@ from shared_regression_pipeline import (
 
 # reuse the helpers from the v2 script
 sys.path.insert(0, SCRIPT_DIR)
-# import the empkins loaders directly from the v2 module
+# import the proposed loaders directly from the v2 module
 import importlib.util as _ilu
+from config import RESULTS_ROOT
 _spec = _ilu.spec_from_file_location(
     "cc_reg_v2",
     os.path.join(SCRIPT_DIR, "06_cross_corpus_regression_v2.py")
 )
 _mod = _ilu.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
-load_empkins_reg          = _mod.load_empkins_reg
-load_empkins_all_phases_reg = _mod.load_empkins_all_phases_reg
+load_proposed_reg          = _mod.load_proposed_reg
+load_proposed_all_phases_reg = _mod.load_proposed_all_phases_reg
 fit_and_eval_reg          = _mod.fit_and_eval_reg
 SOURCE_CONFIGS            = _mod.SOURCE_CONFIGS
 
@@ -64,7 +65,7 @@ if LIGHTGBM_AVAILABLE:
     from lightgbm import LGBMRegressor
 
 OUTPUT_BASE = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_regression_full2full"
 )
 
@@ -83,16 +84,16 @@ def run_config_full2full(config_name, config, timestamp, scalers, models, param_
     # ── Load ALL Proposed ─────────────────────────────────────────────────────
     print("\n[1] Loading ALL Proposed (full corpus, no split) ...")
     if config_name == "ALL":
-        X_emp, y_emp = load_empkins_all_phases_reg()
+        X_emp, y_emp = load_proposed_all_phases_reg()
     else:
         phases = config["phases"]
         condition = config["condition"]
         if len(phases) == 1:
-            X_emp, y_emp = load_empkins_reg(phases[0], condition)
+            X_emp, y_emp = load_proposed_reg(phases[0], condition)
         else:
             all_X, all_y = [], []
             for ph in phases:
-                Xp, yp = load_empkins_reg(ph, condition)
+                Xp, yp = load_proposed_reg(ph, condition)
                 all_X.append(Xp)
                 all_y.append(yp)
             common_cols = sorted(set.intersection(*[set(Xp.columns) for Xp in all_X]))

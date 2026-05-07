@@ -2,7 +2,7 @@
 generate_demographic_tables.py
 ==============================
 Generates demographic and clinical characteristic tables for:
-  1. EmpkinS-EKSpression (256 participants, MDD+ / MDD-)
+  1. ProposedCorpus (256 participants, MDD+ / MDD-)
   2. E-DAIC (275 participants, Depressed / HC)
 
 Output: LaTeX tables + CSV summaries saved to KDD_paper/tables/
@@ -20,18 +20,19 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import stats
+from config import MASTER_DATA_PATH as MASTER_DATA_ROOT
 
 warnings.filterwarnings("ignore")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────────────────────────────────────
-EMPKINS_MASTER = (
-    "/home/hpc/empk/empk004h/depression-detection/"
+PROPOSED_MASTER = (
+    MASTER_DATA_ROOT
     "d02_data/data_info/participant_master_data.csv"
 )
 EDAIC_LABELS = (
-    "/home/hpc/empk/empk004h/depression-detection/"
+    MASTER_DATA_ROOT
     "d02_data/Locs_project/Interspeech/cross_corpus_analysis/"
     "E-DAIC_data/edaic_labels.csv"
 )
@@ -127,10 +128,10 @@ def build_rows(rows, characteristic, g0_val, g1_val, p_val=None, indent=False):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TABLE 1: EmpkinS-EKSpression
+# TABLE 1: ProposedCorpus
 # ─────────────────────────────────────────────────────────────────────────────
-def make_empkins_table():
-    df = pd.read_csv(EMPKINS_MASTER)
+def make_proposed_table():
+    df = pd.read_csv(PROPOSED_MASTER)
     df["phq_9"] = pd.to_numeric(df["phq_9"], errors="coerce")
 
     # Normalise gender: collapse trailing spaces / variants
@@ -368,59 +369,59 @@ def to_latex(df, caption, label, g0_header, g1_header, compact=False):
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
 
-    # ── EmpkinS table ─────────────────────────────────────────────────────────
-    print("Building EmpkinS-EKSpression table...")
-    empkins_df, n_neg, n_pos = make_empkins_table()
+    # ── ProposedCorpus table ─────────────────────────────────────────────────────────
+    print("Building ProposedCorpus table...")
+    proposed_df, n_neg, n_pos = make_proposed_table()
 
-    empkins_csv = os.path.join(OUT_DIR, "table_empkins_demographics.csv")
-    empkins_df.to_csv(empkins_csv, index=False)
-    print(f"  CSV saved: {empkins_csv}")
+    proposed_csv = os.path.join(OUT_DIR, "table_proposed_demographics.csv")
+    proposed_df.to_csv(proposed_csv, index=False)
+    print(f"  CSV saved: {proposed_csv}")
 
-    empkins_latex = to_latex(
-        empkins_df,
+    proposed_latex = to_latex(
+        proposed_df,
         caption=(
-            "Demographic and clinical characteristics of EmpkinS-EKSpression "
+            "Demographic and clinical characteristics of ProposedCorpus "
             f"stratified by diagnostic group (MDD: Major Depressive Disorder "
             f"per SCID-5-CV; $N={n_neg + n_pos}$). "
             "PHQ-9 and PHQ-8 collected independently (PHQ-9 in lab, PHQ-8 remotely before lab visit). "
             "CES-D and HRSD scales administered by clinician after structured interview. "
             "$p$-values: Mann-Whitney $U$ for continuous variables; $\\chi^2$ for categorical."
         ),
-        label="tab:empkins_demographics",
+        label="tab:proposed_demographics",
         g0_header=f"MDD$-$ ($n={n_neg}$)",
         g1_header=f"MDD$+$ ($n={n_pos}$)",
     )
-    empkins_tex = os.path.join(OUT_DIR, "table_empkins_demographics.tex")
-    with open(empkins_tex, "w") as f:
-        f.write(empkins_latex)
-    print(f"  LaTeX saved: {empkins_tex}")
+    proposed_tex = os.path.join(OUT_DIR, "table_proposed_demographics.tex")
+    with open(proposed_tex, "w") as f:
+        f.write(proposed_latex)
+    print(f"  LaTeX saved: {proposed_tex}")
 
     # Compact single-column version
-    empkins_compact_latex = to_latex(
-        make_compact(empkins_df),
+    proposed_compact_latex = to_latex(
+        make_compact(proposed_df),
         caption=(
-            "Demographic and clinical characteristics of EmpkinS-EKSpression "
+            "Demographic and clinical characteristics of ProposedCorpus "
             f"($N={n_neg + n_pos}$, MDD per SCID-5-CV). "
             "PHQ-8 collected remotely; PHQ-9, CES-D, HRSD administered in lab. "
             "$p$: Mann-Whitney $U$ / $\\chi^2$."
         ),
-        label="tab:empkins_demographics_compact",
+        label="tab:proposed_demographics_compact",
         g0_header=f"MDD$-$ ($n={n_neg}$)",
         g1_header=f"MDD$+$ ($n={n_pos}$)",
         compact=True,
     )
-    empkins_compact_tex = os.path.join(OUT_DIR, "table_empkins_demographics_compact.tex")
-    with open(empkins_compact_tex, "w") as f:
-        f.write(empkins_compact_latex)
-    print(f"  Compact LaTeX saved: {empkins_compact_tex}")
+    proposed_compact_tex = os.path.join(OUT_DIR, "table_proposed_demographics_compact.tex")
+    with open(proposed_compact_tex, "w") as f:
+        f.write(proposed_compact_latex)
+    print(f"  Compact LaTeX saved: {proposed_compact_tex}")
 
     # Print plain summary
     print()
     print("=" * 70)
-    print(f"EmpkinS-EKSpression  |  MDD- (n={n_neg})  vs  MDD+ (n={n_pos})")
+    print(f"ProposedCorpus  |  MDD- (n={n_neg})  vs  MDD+ (n={n_pos})")
     print("=" * 70)
-    empkins_df.columns = ["Characteristic", f"MDD- (n={n_neg})", f"MDD+ (n={n_pos})", "p"]
-    print(empkins_df.to_string(index=False))
+    proposed_df.columns = ["Characteristic", f"MDD- (n={n_neg})", f"MDD+ (n={n_pos})", "p"]
+    print(proposed_df.to_string(index=False))
 
     # ── E-DAIC table ──────────────────────────────────────────────────────────
     print("\n\nBuilding E-DAIC table...")

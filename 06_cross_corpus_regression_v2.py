@@ -1,20 +1,20 @@
 """
 06_cross_corpus_regression_v2.py
 =====================================
-Cross-corpus PHQ-8 regression: EmpkinS RCT ↔ E-DAIC.
+Cross-corpus PHQ-8 regression: ProposedCorpus RCT ↔ E-DAIC.
 Parallel structure to 05_cross_corpus_classification.py so both result tables
 can be directly compared in the paper.
 
-Source configurations (EmpkinS side) — selected by within-corpus PHQ-8 CCC
+Source configurations (ProposedCorpus side) — selected by within-corpus PHQ-8 CCC
 using the 882 cross-corpus restricted features (holdout evaluation):
   LAT_ADK  — latency / ADK        (within-corpus CCC=0.66; passive observation, ADK condition)
   LAT_SHAM — latency / SHAM       (within-corpus CCC=0.55; passive + control/no-intervention)
   EI1_ADK  — emotion_induction_1 / ADK  (within-corpus CCC=0.46; comparison with classification)
-  ALL      — all 4 phases × all conditions (EmpkinS pooled; largest training set baseline)
+  ALL      — all 4 phases × all conditions (ProposedCorpus pooled; largest training set baseline)
 
 Rationale for using latency phase as primary config:
   The latency (preparatory/baseline) phase is a passive observation task where participants
-  sit quietly in front of the camera — the closest EmpkinS equivalent to the E-DAIC
+  sit quietly in front of the camera — the closest ProposedCorpus equivalent to the E-DAIC
   clinical interview setting. It achieves the highest within-corpus PHQ-8 CCC, which is
   the task-matched selection criterion for cross-corpus regression.
 
@@ -23,10 +23,10 @@ Rationale for using latency phase as primary config:
   difference is itself informative about the task/phase interaction.
 
 Experiments:
-  A : EmpkinS-ALL → E-DAIC official test set
-  B : E-DAIC (train+dev) → EmpkinS (official held-out test split)
-  C1: EmpkinS (train split) → E-DAIC test
-  C2: E-DAIC (train+dev) → EmpkinS (test split)
+  A : ProposedCorpus-ALL → E-DAIC official test set
+  B : E-DAIC (train+dev) → ProposedCorpus (official held-out test split)
+  C1: ProposedCorpus (train split) → E-DAIC test
+  C2: E-DAIC (train+dev) → ProposedCorpus (test split)
 
 Feature selection: FDR-corrected Spearman + RFE (Ridge surrogate), train only.
 
@@ -59,9 +59,10 @@ warnings.filterwarnings("ignore")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from shared_regression_pipeline import (
+from config import RESULTS_ROOT
     CATBOOST_AVAILABLE,
     LIGHTGBM_AVAILABLE,
-    EMPKINS_PHASE_FEATURES,
+    PROPOSED_PHASE_FEATURES,
     EXCLUDE_COLS,
     MASTER_DATA_PATH,
     _bh_correction,
@@ -74,7 +75,7 @@ from shared_regression_pipeline import (
     load_edaic_data,
     load_shared_split,
     normalize_id,
-    rename_empkins_to_openface,
+    rename_proposed_to_openface,
     rfe_select_regression,
     spearman_select_fdr,
 )
@@ -89,7 +90,7 @@ if LIGHTGBM_AVAILABLE:
 # CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 OUTPUT_BASE = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_regression_v2"
 )
 
@@ -167,15 +168,15 @@ def print_reg_metrics(metrics, label=""):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DATA LOADING — EmpkinS (PHQ-8 target)
+# DATA LOADING — ProposedCorpus (PHQ-8 target)
 # ─────────────────────────────────────────────────────────────────────────────
-def load_empkins_reg(phase, condition):
+def load_proposed_reg(phase, condition):
     """
-    Load EmpkinS pre-aggregated video features + PHQ-8 target for one
+    Load ProposedCorpus pre-aggregated video features + PHQ-8 target for one
     phase/condition. Returns (X, y_phq8).
     """
-    features_path = EMPKINS_PHASE_FEATURES[phase]
-    print("  Loading EmpkinS [{}/{}]: {}".format(phase, condition, features_path))
+    features_path = PROPOSED_PHASE_FEATURES[phase]
+    print("  Loading ProposedCorpus [{}/{}]: {}".format(phase, condition, features_path))
 
     feat_df = pd.read_csv(features_path)
     feat_df.columns = feat_df.columns.str.strip()
@@ -215,7 +216,7 @@ def load_empkins_reg(phase, condition):
     if X.shape[1] < n_before:
         print("  Dropped {} non-numeric columns.".format(n_before - X.shape[1]))
 
-    X = rename_empkins_to_openface(X)
+    X = rename_proposed_to_openface(X)
 
     # Drop rename-created duplicates (positive_training has both naming styles)
     n_before = X.shape[1]
@@ -230,12 +231,12 @@ def load_empkins_reg(phase, condition):
     return X, y
 
 
-def load_empkins_all_phases_reg():
+def load_proposed_all_phases_reg():
     """Pool all 4 phases × all conditions, returning (X, y_phq8)."""
     print("\n  Loading ALL phases × ALL conditions ...")
     all_X, all_y = [], []
     for phase in ALL_PHASES:
-        Xp, yp = load_empkins_reg(phase, "ALL_CONDITIONS")
+        Xp, yp = load_proposed_reg(phase, "ALL_CONDITIONS")
         all_X.append(Xp)
         all_y.append(yp)
 
@@ -367,14 +368,14 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     print("  Experiments: {}".format(experiments))
     print("=" * 80)
 
-    # ── Load EmpkinS ──────────────────────────────────────────────────────────
-    print("\n[1] Loading EmpkinS data ...")
+    # ── Load ProposedCorpus ──────────────────────────────────────────────────────────
+    print("\n[1] Loading ProposedCorpus data ...")
     if config_name == "ALL":
-        X_emp, y_emp = load_empkins_all_phases_reg()
+        X_emp, y_emp = load_proposed_all_phases_reg()
         split_tag    = "ALL"
     else:
         assert len(phases) == 1
-        X_emp, y_emp = load_empkins_reg(phases[0], condition)
+        X_emp, y_emp = load_proposed_reg(phases[0], condition)
         split_tag    = "ALL" if condition == "ALL_CONDITIONS" else condition
 
     # Aggregate sessions to participant level — matches within-corpus nested CV
@@ -399,9 +400,9 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     y_emp_train     = y_emp[y_emp.index.isin(emp_train_idx)]
     y_emp_test      = y_emp[y_emp.index.isin(emp_test_idx)]
 
-    print("  EmpkinS train: n_participants={}  PHQ-8 mean={:.1f}".format(
+    print("  ProposedCorpus train: n_participants={}  PHQ-8 mean={:.1f}".format(
               len(emp_train_idx), y_emp_train.mean()))
-    print("  EmpkinS test:  n_participants={}  PHQ-8 mean={:.1f}".format(
+    print("  ProposedCorpus test:  n_participants={}  PHQ-8 mean={:.1f}".format(
               len(emp_test_idx), y_emp_test.mean()))
 
     # ── Load E-DAIC ───────────────────────────────────────────────────────────
@@ -430,7 +431,7 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     # ═══════════════════════════════════════════════════════════════════════════
     if "A" in experiments:
         print("\n" + "─" * 80)
-        print("  EXPERIMENT A: EmpkinS-ALL → E-DAIC test")
+        print("  EXPERIMENT A: ProposedCorpus-ALL → E-DAIC test")
         print("─" * 80)
 
         X_emp_all_al, X_daic_te_al = align_features(X_emp, X_daic_test_raw)
@@ -455,8 +456,8 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
         )
         if best_A:
             summary_rows.append({
-                "Experiment":   "A: EmpkinS-ALL→E-DAIC-test",
-                "Train_source": "EmpkinS-ALL ({} sessions, {} participants)".format(
+                "Experiment":   "A: ProposedCorpus-ALL→E-DAIC-test",
+                "Train_source": "ProposedCorpus-ALL ({} sessions, {} participants)".format(
                     len(y_emp_all), len(set(y_emp_all.index.tolist()))),
                 "Test_source":  "E-DAIC official test split",
                 "n_train":      len(y_emp_all),
@@ -470,7 +471,7 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     # ═══════════════════════════════════════════════════════════════════════════
     if "B" in experiments:
         print("\n" + "─" * 80)
-        print("  EXPERIMENT B: E-DAIC (train+dev) → EmpkinS test")
+        print("  EXPERIMENT B: E-DAIC (train+dev) → ProposedCorpus test")
         print("─" * 80)
 
         X_daic_tr_al, X_emp_te_al = align_features(X_daic_train_raw, X_emp_test_raw)
@@ -494,9 +495,9 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
         )
         if best_B:
             summary_rows.append({
-                "Experiment":   "B: E-DAIC-ALL→EmpkinS-test",
+                "Experiment":   "B: E-DAIC-ALL→ProposedCorpus-test",
                 "Train_source": "E-DAIC official train+dev split",
-                "Test_source":  "EmpkinS fixed 80/20 test split ({} participants)".format(
+                "Test_source":  "ProposedCorpus fixed 80/20 test split ({} participants)".format(
                     len(set(y_emp_test.index.tolist()))),
                 "n_train":      len(y_daic_train),
                 "n_test":       len(y_emp_test),
@@ -509,7 +510,7 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     # ═══════════════════════════════════════════════════════════════════════════
     if "C" in experiments:
         print("\n" + "─" * 80)
-        print("  EXPERIMENT C1: EmpkinS (train split) → E-DAIC test")
+        print("  EXPERIMENT C1: ProposedCorpus (train split) → E-DAIC test")
         print("─" * 80)
 
         X_emp_tr_al, X_daic_te_al = align_features(X_emp_train_raw, X_daic_test_raw)
@@ -533,8 +534,8 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
         )
         if best_C1:
             summary_rows.append({
-                "Experiment":   "C1: EmpkinS-train→E-DAIC-test",
-                "Train_source": "EmpkinS fixed 80/20 train split ({} participants)".format(
+                "Experiment":   "C1: ProposedCorpus-train→E-DAIC-test",
+                "Train_source": "ProposedCorpus fixed 80/20 train split ({} participants)".format(
                     len(set(y_emp_train.index.tolist()))),
                 "Test_source":  "E-DAIC official test split",
                 "n_train":      len(y_emp_train),
@@ -544,7 +545,7 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
             })
 
         print("\n" + "─" * 80)
-        print("  EXPERIMENT C2: E-DAIC (train+dev) → EmpkinS (test split)")
+        print("  EXPERIMENT C2: E-DAIC (train+dev) → ProposedCorpus (test split)")
         print("─" * 80)
 
         X_daic_tr2_al, X_emp_te2_al = align_features(X_daic_train_raw, X_emp_test_raw)
@@ -568,9 +569,9 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
         )
         if best_C2:
             summary_rows.append({
-                "Experiment":   "C2: E-DAIC-train→EmpkinS-test",
+                "Experiment":   "C2: E-DAIC-train→ProposedCorpus-test",
                 "Train_source": "E-DAIC official train+dev split",
-                "Test_source":  "EmpkinS fixed 80/20 test split ({} participants)".format(
+                "Test_source":  "ProposedCorpus fixed 80/20 test split ({} participants)".format(
                     len(set(y_emp_test.index.tolist()))),
                 "n_train":      len(y_daic_train),
                 "n_test":       len(y_emp_test),
@@ -582,9 +583,9 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
     # EXPERIMENT D: within-corpus baselines (same fixed splits)
     # ═══════════════════════════════════════════════════════════════════════════
     if "D" in experiments:
-        # D1: EmpkinS-train → EmpkinS-test (within-corpus upper bound)
+        # D1: ProposedCorpus-train → ProposedCorpus-test (within-corpus upper bound)
         print("\n" + "─" * 80)
-        print("  EXPERIMENT D1: EmpkinS-train → EmpkinS-test (within-corpus baseline)")
+        print("  EXPERIMENT D1: ProposedCorpus-train → ProposedCorpus-test (within-corpus baseline)")
         print("─" * 80)
 
         X_emp_tr_al, X_emp_te_al = align_features(X_emp_train_raw, X_emp_test_raw)
@@ -608,10 +609,10 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
         )
         if best_D1:
             summary_rows.append({
-                "Experiment":   "D1: EmpkinS-train→EmpkinS-test",
-                "Train_source": "EmpkinS fixed 80/20 train split ({} participants)".format(
+                "Experiment":   "D1: ProposedCorpus-train→ProposedCorpus-test",
+                "Train_source": "ProposedCorpus fixed 80/20 train split ({} participants)".format(
                     len(set(y_emp_train.index.tolist()))),
-                "Test_source":  "EmpkinS fixed 80/20 test split ({} participants)".format(
+                "Test_source":  "ProposedCorpus fixed 80/20 test split ({} participants)".format(
                     len(set(y_emp_test.index.tolist()))),
                 "n_train":      len(y_emp_train),
                 "n_test":       len(y_emp_test),
@@ -681,7 +682,7 @@ def run_config(config_name, config, experiments, timestamp, scalers, models, par
 # ─────────────────────────────────────────────────────────────────────────────
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Cross-corpus PHQ-8 regression v2: EmpkinS ↔ E-DAIC"
+        description="Cross-corpus PHQ-8 regression v2: ProposedCorpus ↔ E-DAIC"
     )
     parser.add_argument(
         "--configs", nargs="+", default=list(SOURCE_CONFIGS.keys()),

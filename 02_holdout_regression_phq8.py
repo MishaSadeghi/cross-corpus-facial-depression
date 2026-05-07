@@ -1,11 +1,11 @@
 """
 02_holdout_regression_phq8.py
 ==============================
-PHQ-8 score regression on EmpkinS RCT video features — fixed holdout evaluation.
+PHQ-8 score regression on ProposedCorpus RCT video features — fixed holdout evaluation.
 Mirrors the classification holdout_v2.py pipeline but predicts continuous PHQ-8.
 
 Pipeline (no data leakage):
-  1. Load pre-aggregated EmpkinS video features for a phase.
+  1. Load pre-aggregated ProposedCorpus video features for a phase.
   2. Filter to participants in the SHARED train/test split.
   3. Imputer    : fit on X_train, transform X_test.
   4. Scaler     : fit on X_train, transform X_test.
@@ -38,6 +38,7 @@ warnings.filterwarnings("ignore")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from shared_regression_pipeline import (
+from config import RESULTS_ROOT
     CATBOOST_AVAILABLE,
     LIGHTGBM_AVAILABLE,
     ALL_CONDITIONS,
@@ -47,7 +48,7 @@ from shared_regression_pipeline import (
     get_regressors,
     get_scalers,
     grid_search_regressor,
-    load_empkins_data,
+    load_proposed_data,
     load_shared_split,
     pearson_redundancy_prune,
     print_metrics,
@@ -63,7 +64,7 @@ if LIGHTGBM_AVAILABLE:
 # OUTPUT DIRECTORY
 # ─────────────────────────────────────────────────────────────────────────────
 OUTPUT_BASE = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/regression_phq8"
 )
 
@@ -100,8 +101,8 @@ def run_regression_holdout(phase: str, conditions: list):
             print(f"  ERROR: {e}")
             continue
 
-        # ── 2. Load EmpkinS features (PHQ-8 as target) ───────────────────────
-        X_full, y_full, subject_ids = load_empkins_data(phase, condition)
+        # ── 2. Load ProposedCorpus features (PHQ-8 as target) ───────────────────────
+        X_full, y_full, subject_ids = load_proposed_data(phase, condition)
         if X_full.empty:
             print(f"  Skipping {condition}: no data.")
             continue
@@ -252,7 +253,7 @@ def run_regression_holdout(phase: str, conditions: list):
 # ─────────────────────────────────────────────────────────────────────────────
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="PHQ-8 regression holdout on EmpkinS video features"
+        description="PHQ-8 regression holdout on ProposedCorpus video features"
     )
     parser.add_argument(
         "--phase", required=True,

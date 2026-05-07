@@ -60,6 +60,7 @@ warnings.filterwarnings("ignore")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from shared_regression_pipeline import (
+from config import RESULTS_ROOT
     CATBOOST_AVAILABLE,
     LIGHTGBM_AVAILABLE,
     ALL_CONDITIONS,
@@ -68,7 +69,7 @@ from shared_regression_pipeline import (
     get_regressors,
     get_scalers,
     grid_search_regressor,
-    load_empkins_data,
+    load_proposed_data,
     print_metrics,
     rfe_select_regression,
     spearman_select_fdr,
@@ -85,7 +86,7 @@ if LIGHTGBM_AVAILABLE:
 # CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 OUTPUT_BASE       = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/repeated_holdout_phq8_v2"
 )
 TEST_SIZE         = 0.20   # 80/20 split
@@ -122,7 +123,7 @@ def run_repeated_holdout(phase: str, conditions: list, n_seeds: int):
         print(f"{'#'*80}")
 
         # Load features and PHQ-8 target
-        X_full, y_full, subject_ids = load_empkins_data(phase, condition)
+        X_full, y_full, subject_ids = load_proposed_data(phase, condition)
         if X_full.empty:
             print(f"  Skipping {condition}: no data.")
             continue

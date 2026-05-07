@@ -1,7 +1,7 @@
 """
 holdout_phq8_regression.py
 ==========================
-Within-corpus multi-scale regression on EmpkinS-EKSpression using a fixed holdout split.
+Within-corpus multi-scale regression on ProposedCorpus using a fixed holdout split.
 
 Supports all 7 depression severity scales:
   PHQ-8 (phq_8), PHQ-9 (phq_9), CES-D/ADS (ads.1),
@@ -54,7 +54,7 @@ sys.path.insert(0, PARENT_DIR)
 from shared_regression_pipeline import (
     ALL_TARGET_COLS,
     EDAIC_AGGREGATED_PATH,
-    EMPKINS_PHASE_FEATURES,
+    PROPOSED_PHASE_FEATURES,
     EXCLUDE_COLS,
     TARGET_SHORT_NAMES,
     evaluate_regressor_ext,
@@ -62,7 +62,7 @@ from shared_regression_pipeline import (
     get_regressors,
     get_scalers,
     grid_search_regressor,
-    load_empkins_data,
+    load_proposed_data,
     load_shared_split,
     rfe_select_regression,
     spearman_select_fdr,
@@ -71,7 +71,7 @@ from shared_regression_pipeline import (
 RESULTS_BASE = os.path.join(SCRIPT_DIR, "results")
 
 CONDITIONS_DEFAULT = ["ADK", "CR", "CRADK", "SHAM", "ALL_CONDITIONS"]
-PHASES_AVAILABLE   = list(EMPKINS_PHASE_FEATURES.keys())
+PHASES_AVAILABLE   = list(PROPOSED_PHASE_FEATURES.keys())
 TARGETS_DEFAULT    = ALL_TARGET_COLS   # all 7 scales by default
 
 
@@ -106,7 +106,7 @@ def run_one_target(phase, condition, target_col, feat_label,
 
     # 1. Load data
     try:
-        X_full, y_full, _ = load_empkins_data(phase, condition, target_col)
+        X_full, y_full, _ = load_proposed_data(phase, condition, target_col)
     except Exception as e:
         print("  ERROR loading: {}".format(e))
         return []
@@ -343,7 +343,7 @@ def run_holdout(phase: str, conditions: list, targets: list,
 # ─────────────────────────────────────────────────────────────────────────────
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Within-corpus multi-scale holdout regression for EmpkinS"
+        description="Within-corpus multi-scale holdout regression for ProposedCorpus"
     )
     parser.add_argument("--phase", required=True, choices=PHASES_AVAILABLE,
                         help="Experimental phase")

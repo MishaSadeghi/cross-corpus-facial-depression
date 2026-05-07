@@ -30,6 +30,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
 import importlib.util as _ilu
+from config import RESULTS_ROOT
 
 def _load_module(name, filename):
     spec = _ilu.spec_from_file_location(name, os.path.join(SCRIPT_DIR, filename))
@@ -41,11 +42,11 @@ _scid_mod = _load_module("cls_scid", "05_cross_corpus_classification.py")
 _phq8_mod = _load_module("cls_phq8", "07_cross_corpus_classification_phq8.py")
 
 # SCID label loaders (Setting 1 Proposed side)
-load_empkins_cls           = _scid_mod.load_empkins_cls
-load_empkins_all_phases_cls = _scid_mod.load_empkins_all_phases_cls
+load_proposed_cls           = _scid_mod.load_proposed_cls
+load_proposed_all_phases_cls = _scid_mod.load_proposed_all_phases_cls
 # PHQ-8 label loaders (Setting 2 Proposed side)
-load_empkins_cls_phq8           = _phq8_mod.load_empkins_cls_phq8
-load_empkins_all_phases_cls_phq8 = _phq8_mod.load_empkins_all_phases_cls_phq8
+load_proposed_cls_phq8           = _phq8_mod.load_proposed_cls_phq8
+load_proposed_all_phases_cls_phq8 = _phq8_mod.load_proposed_all_phases_cls_phq8
 # E-DAIC loader (same for both settings — always PHQ-8>=10)
 load_edaic_cls  = _scid_mod.load_edaic_cls
 # Shared classification pipeline
@@ -57,23 +58,23 @@ align_features   = _scid_mod.align_features
 SOURCE_CONFIGS   = _scid_mod.SOURCE_CONFIGS
 
 OUTPUT_BASE = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_classification_full2full"
 )
 
 ALL_PHASES = ["latency", "emotion_induction_1", "negative_training", "positive_training"]
 
 
-def load_empkins_full(config_name, config, label_setting):
+def load_proposed_full(config_name, config, label_setting):
     """Load all Proposed participants for a given config and label setting."""
     phases    = config["phases"]
     condition = config["condition"]
     if label_setting == "scid":
-        loader     = load_empkins_cls
-        loader_all = load_empkins_all_phases_cls
+        loader     = load_proposed_cls
+        loader_all = load_proposed_all_phases_cls
     else:
-        loader     = load_empkins_cls_phq8
-        loader_all = load_empkins_all_phases_cls_phq8
+        loader     = load_proposed_cls_phq8
+        loader_all = load_proposed_all_phases_cls_phq8
 
     if config_name == "ALL":
         X_emp, y_emp = loader_all()
@@ -104,7 +105,7 @@ def run_setting(config_name, config, label_setting,
     print("  Config: {}  |  Label setting: {}".format(config_name, tag))
     print("-" * 80)
 
-    X_emp, y_emp = load_empkins_full(config_name, config, label_setting)
+    X_emp, y_emp = load_proposed_full(config_name, config, label_setting)
     print("  Proposed ALL ({}): n={}, dep={}/{}".format(
         tag, len(y_emp), int(y_emp.sum()), int((y_emp == 0).sum())))
 

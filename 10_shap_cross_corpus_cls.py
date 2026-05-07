@@ -34,15 +34,16 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
 from shared_regression_pipeline import (
-    EMPKINS_PHASE_FEATURES, MASTER_DATA_PATH, EDAIC_AGGREGATED_PATH,
-    EMPKINS_SPLITS_DIR, EXCLUDE_COLS,
+from config import RESULTS_ROOT
+    PROPOSED_PHASE_FEATURES, MASTER_DATA_PATH, EDAIC_AGGREGATED_PATH,
+    PROPOSED_SPLITS_DIR, EXCLUDE_COLS,
     load_shared_split, normalize_id, align_features,
-    rename_empkins_to_openface,
+    rename_proposed_to_openface,
 )
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 CLS_BASE   = (
-    "/home/woody/empk/empk004h/D02_dataset/D02_final_results_and_models/"
+    RESULTS_ROOT
     "KDD_paper/cross_corpus_classification"
 )
 OUTPUT_DIR = os.path.join(CLS_BASE, "shap_plots")
@@ -116,8 +117,8 @@ def clean_name(raw):
 
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
-def _load_empkins_phase(phase, condition):
-    feat_df = pd.read_csv(EMPKINS_PHASE_FEATURES[phase])
+def _load_proposed_phase(phase, condition):
+    feat_df = pd.read_csv(PROPOSED_PHASE_FEATURES[phase])
     feat_df.columns = feat_df.columns.str.strip()
     feat_df["ID"] = feat_df["ID"].apply(normalize_id)
     drop_cols = [c for c in EXCLUDE_COLS if c in feat_df.columns and c != "ID"]
@@ -137,7 +138,7 @@ def _load_empkins_phase(phase, condition):
     merged = merged.dropna(subset=["ground_truth_label"]).set_index("ID")
     feat_cols = [c for c in merged.columns if c not in EXCLUDE_COLS]
     X = merged[feat_cols].select_dtypes(include=[np.number])
-    X = rename_empkins_to_openface(X)
+    X = rename_proposed_to_openface(X)
     X = X.loc[:, ~X.columns.duplicated()]
     y = merged["ground_truth_label"].astype(int)
     X = X.groupby(X.index).mean()
@@ -219,9 +220,9 @@ def run_plot1():
     print("="*70)
 
     # Load Proposed (latency, ALL_CONDITIONS)
-    print("  Loading EmpkinS LAT_ALL ...")
-    X_emp, y_emp = _load_empkins_phase("latency", "ALL_CONDITIONS")
-    print(f"  EmpkinS all: {X_emp.shape}, dep={y_emp.sum()}/{len(y_emp)}")
+    print("  Loading ProposedCorpus LAT_ALL ...")
+    X_emp, y_emp = _load_proposed_phase("latency", "ALL_CONDITIONS")
+    print(f"  ProposedCorpus all: {X_emp.shape}, dep={y_emp.sum()}/{len(y_emp)}")
 
     # Load E-DAIC (for feature alignment only)
     print("  Loading E-DAIC ...")
@@ -285,9 +286,9 @@ def run_plot2():
     y_daic_tr = y_daic[split_col != "test"]
     print(f"  E-DAIC train+dev: {X_daic_tr.shape}, dep={y_daic_tr.sum()}/{len(y_daic_tr)}")
 
-    # Load EmpkinS POS_ADK (for feature alignment only)
-    print("  Loading EmpkinS POS_ADK ...")
-    X_emp, y_emp = _load_empkins_phase("positive_training", "ADK")
+    # Load ProposedCorpus POS_ADK (for feature alignment only)
+    print("  Loading ProposedCorpus POS_ADK ...")
+    X_emp, y_emp = _load_proposed_phase("positive_training", "ADK")
     _, test_ids  = load_shared_split("ADK")
     X_emp_te     = X_emp[X_emp.index.isin(test_ids)]
 

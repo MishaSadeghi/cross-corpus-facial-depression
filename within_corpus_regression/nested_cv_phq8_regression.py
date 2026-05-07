@@ -1,7 +1,7 @@
 """
 nested_cv_phq8_regression.py
 =============================
-Within-corpus multi-scale nested CV regression on EmpkinS-EKSpression.
+Within-corpus multi-scale nested CV regression on ProposedCorpus.
 
 Supports all 7 depression severity scales:
   PHQ-8 (phq_8), PHQ-9 (phq_9), CES-D/ADS (ads.1),
@@ -43,7 +43,7 @@ sys.path.insert(0, PARENT_DIR)
 from shared_regression_pipeline import (
     ALL_TARGET_COLS,
     EDAIC_AGGREGATED_PATH,
-    EMPKINS_PHASE_FEATURES,
+    PROPOSED_PHASE_FEATURES,
     EXCLUDE_COLS,
     MASTER_DATA_PATH,
     TARGET_SHORT_NAMES,
@@ -52,7 +52,7 @@ from shared_regression_pipeline import (
     get_regressors,
     get_scalers,
     grid_search_regressor,
-    load_empkins_data,
+    load_proposed_data,
     normalize_id,
     rfe_select_regression,
     spearman_select_fdr,
@@ -61,7 +61,7 @@ from shared_regression_pipeline import (
 RESULTS_BASE = os.path.join(SCRIPT_DIR, "results")
 
 CONDITIONS_DEFAULT = ["ADK", "CR", "CRADK", "SHAM", "ALL_CONDITIONS"]
-PHASES_AVAILABLE   = list(EMPKINS_PHASE_FEATURES.keys())
+PHASES_AVAILABLE   = list(PROPOSED_PHASE_FEATURES.keys())
 TARGETS_DEFAULT    = ALL_TARGET_COLS
 N_OUTER_FOLDS      = 5
 OUTER_SEED         = 42
@@ -134,7 +134,7 @@ def run_one_target_cv(phase, condition, target_col, feat_label,
 
     # 1. Load and aggregate
     try:
-        X_full, y_full, _ = load_empkins_data(phase, condition, target_col)
+        X_full, y_full, _ = load_proposed_data(phase, condition, target_col)
     except Exception as e:
         print("  ERROR loading: {}".format(e))
         return [], pd.DataFrame()
@@ -422,7 +422,7 @@ def run_nested_cv(phase: str, conditions: list, targets: list,
 # ─────────────────────────────────────────────────────────────────────────────
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Within-corpus multi-scale nested CV regression for EmpkinS"
+        description="Within-corpus multi-scale nested CV regression for ProposedCorpus"
     )
     parser.add_argument("--phase", required=True, choices=PHASES_AVAILABLE,
                         help="Experimental phase")

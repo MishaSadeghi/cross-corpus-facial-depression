@@ -5,14 +5,14 @@ Shared helpers for PHQ-8 regression and cross-corpus video analysis.
 Self-contained — no dependency on the classification pipeline.
 
 Regression targets:
-  EmpkinS : phq_8  (from participant_master_data.csv)
+  ProposedCorpus : phq_8  (from participant_master_data.csv)
   E-DAIC  : PHQ_score  (from edaic_labels.csv, same instrument)
 
 Statistical aggregation (18 functionals per OpenFace column):
   Original signal   : mean, std, min, max, skew, kurt, range, entropy
   Frame differences : mean, std, min, max, skew, kurt, range, entropy
   Dynamic           : rate_of_change, peaks_count
-  → column naming: {signal}__{stat}  (matches EmpkinS processed CSVs)
+  → column naming: {signal}__{stat}  (matches ProposedCorpus processed CSVs)
 """
 
 import math
@@ -58,52 +58,17 @@ except ImportError:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# PATHS
+# PATHS  —  imported from config.py (set your paths there)
 # ─────────────────────────────────────────────────────────────────────────────
-MASTER_DATA_PATH = (
-    "/home/hpc/empk/empk004h/depression-detection/d02_data/data_info/"
-    "participant_master_data.csv"
+from config import (
+    MASTER_DATA_PATH,
+    EDAIC_LABELS_PATH,
+    EDAIC_OPENFACE_ROOT,
+    EDAIC_AGGREGATED_PATH,
+    PROPOSED_SPLITS_DIR,
+    PROPOSED_PHASE_FEATURES,
+    RESULTS_ROOT,
 )
-EDAIC_LABELS_PATH = (
-    "/home/hpc/empk/empk004h/depression-detection/d02_data/Locs_project/"
-    "Interspeech/cross_corpus_analysis/E-DAIC_data/edaic_labels.csv"
-)
-EDAIC_OPENFACE_ROOT = (
-    "/home/vault/empkins/tpD/D02/processed_data/DAIC_datasets/E-DAIC/extracted"
-)
-EDAIC_AGGREGATED_PATH = (
-    "/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/"
-    "processed_data_stats/edaic_openface_aggregated.csv"
-)
-
-# Shared EmpkinS train/test split files
-EMPKINS_SPLITS_DIR = (
-    "/home/hpc/empk/empk004h/depression-detection/affective_paper_final_revisions/"
-    "classical_ML_fixed/scripts"
-)
-
-# EmpkinS pre-aggregated feature CSVs
-EMPKINS_PHASE_FEATURES = {
-    "latency": (
-        "/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/"
-        "processed_data_stats/sony_videos_final/latency_sony_final.csv"
-    ),
-    "emotion_induction_1": (
-        "/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/"
-        "processed_data_stats/emotion_induction_stats_final/"
-        "emotion_induction_1_orig_without_norm_augmented.csv"
-    ),
-    "negative_training": (
-        "/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/"
-        "processed_data_stats/training_original_stats/"
-        "negative_training_orig_without_norm.csv"
-    ),
-    "positive_training": (
-        "/home/woody/empk/empk004h/D02_dataset/depression_face_analysis/"
-        "processed_data_stats/training_original_stats/"
-        "positive_training_orig_without_norm.csv"
-    ),
-}
 
 # Metadata columns to exclude from feature matrix
 EXCLUDE_COLS = {
@@ -118,20 +83,20 @@ EXCLUDE_COLS = {
     "training1_rating", "training2_rating", "session_rating",
 }
 
-# Conditions in EmpkinS RCT
+# Conditions in ProposedCorpus RCT
 ALL_CONDITIONS = ["ADK", "CR", "CRADK", "SHAM"]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EMPKINS → OPENFACE COLUMN RENAME
+# PROPOSED → OPENFACE COLUMN RENAME
 # ─────────────────────────────────────────────────────────────────────────────
-def rename_empkins_to_openface(X: pd.DataFrame) -> pd.DataFrame:
+def rename_proposed_to_openface(X: pd.DataFrame) -> pd.DataFrame:
     """
-    Rename EmpkinS custom column names to standard OpenFace names so that
+    Rename ProposedCorpus custom column names to standard OpenFace names so that
     feature alignment with E-DAIC (which uses raw OpenFace output) works
     correctly.
 
-    EmpkinS preprocessing uses a different naming convention:
+    ProposedCorpus preprocessing uses a different naming convention:
       fac_AU{XX}int   →  AU{XX}_r   (AU intensity)
       fac_AU{XX}pres  →  AU{XX}_c   (AU presence / confidence)
 
@@ -157,7 +122,7 @@ def rename_empkins_to_openface(X: pd.DataFrame) -> pd.DataFrame:
 
     if rename_map:
         X = X.rename(columns=rename_map)
-        print("  Column rename: {} EmpkinS AU cols → OpenFace naming"
+        print("  Column rename: {} ProposedCorpus AU cols → OpenFace naming"
               " (AU{{XX}}_r / AU{{XX}}_c)".format(len(rename_map)))
     return X
 
@@ -175,12 +140,12 @@ def normalize_id(pid) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SHARED SPLIT LOADER (reuses the pre-computed EmpkinS splits)
+# SHARED SPLIT LOADER (reuses the pre-computed ProposedCorpus splits)
 # ─────────────────────────────────────────────────────────────────────────────
 def load_shared_split(tag: str):
-    """Load pre-computed EmpkinS train/test participant IDs (tag: ALL/ADK/CR/CRADK/SHAM)."""
-    train_path = os.path.join(EMPKINS_SPLITS_DIR, f"shared_train_ids_{tag}.csv")
-    test_path  = os.path.join(EMPKINS_SPLITS_DIR, f"shared_test_ids_{tag}.csv")
+    """Load pre-computed ProposedCorpus train/test participant IDs (tag: ALL/ADK/CR/CRADK/SHAM)."""
+    train_path = os.path.join(PROPOSED_SPLITS_DIR, f"shared_train_ids_{tag}.csv")
+    test_path  = os.path.join(PROPOSED_SPLITS_DIR, f"shared_test_ids_{tag}.csv")
     if not os.path.exists(train_path):
         raise FileNotFoundError(
             f"Split file not found: {train_path}\n"
@@ -193,7 +158,7 @@ def load_shared_split(tag: str):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EMPKINS DATA LOADING
+# PROPOSED DATA LOADING
 # ─────────────────────────────────────────────────────────────────────────────
 # All continuous target columns available in master data
 ALL_TARGET_COLS = ["phq_8", "phq_9", "ads.1",
@@ -211,13 +176,13 @@ TARGET_SHORT_NAMES = {
 }
 
 
-def load_empkins_data(phase: str, condition: str, target_col: str = "phq_8"):
+def load_proposed_data(phase: str, condition: str, target_col: str = "phq_8"):
     """
-    Load EmpkinS pre-aggregated video features for one phase/condition.
+    Load ProposedCorpus pre-aggregated video features for one phase/condition.
 
     Parameters
     ----------
-    phase      : one of EMPKINS_PHASE_FEATURES keys
+    phase      : one of PROPOSED_PHASE_FEATURES keys
     condition  : one of ALL_CONDITIONS or 'ALL_CONDITIONS'
     target_col : regression target column from master data
                  (default 'phq_8'; also supports 'phq_9', 'ads.1',
@@ -234,8 +199,8 @@ def load_empkins_data(phase: str, condition: str, target_col: str = "phq_8"):
             "Unknown target_col '{}'. Choose from: {}".format(
                 target_col, ALL_TARGET_COLS))
 
-    features_path = EMPKINS_PHASE_FEATURES[phase]
-    print("  Loading EmpkinS features: {}".format(features_path))
+    features_path = PROPOSED_PHASE_FEATURES[phase]
+    print("  Loading ProposedCorpus features: {}".format(features_path))
 
     feat_df = pd.read_csv(features_path)
     feat_df.columns = feat_df.columns.str.strip()
@@ -289,10 +254,10 @@ def load_empkins_data(phase: str, condition: str, target_col: str = "phq_8"):
     if dropped:
         print("  Dropped {} non-numeric columns.".format(dropped))
 
-    # Rename EmpkinS AU columns to standard OpenFace names so that
+    # Rename ProposedCorpus AU columns to standard OpenFace names so that
     # align_features() with E-DAIC gives the full AU/gaze/pose overlap
     # instead of just the gaze+pose subset.
-    X = rename_empkins_to_openface(X)
+    X = rename_proposed_to_openface(X)
 
     # Deduplicate columns after rename (some phase CSVs contain both the
     # original fac_AU*int__* names AND the standard AU*_r__* names; after
@@ -678,7 +643,7 @@ def compute_entropy(series: pd.Series, bins: int = 10) -> float:
 def aggregate_openface_frames(df: pd.DataFrame, bins: int = 10) -> dict:
     """
     18 statistical functionals per numeric OpenFace column.
-    Naming: {col}__{stat}  — identical to EmpkinS processed CSVs.
+    Naming: {col}__{stat}  — identical to ProposedCorpus processed CSVs.
     """
     agg = {}
     for col in df.columns:
