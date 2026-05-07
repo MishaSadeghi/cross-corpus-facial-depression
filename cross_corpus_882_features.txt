@@ -1,4 +1,4 @@
-# 882 facial video features shared between EmpkinS and E-DAIC
+# 882 facial video features shared between ProposedCorpus and E-DAIC
 # (OpenFace AU intensities, AU presences, gaze angles, head pose)
 # 18 statistical functionals per signal: mean/std/min/max/skew/kurt/range/entropy
 #   for both original signal and first derivative, plus rate_of_change and peaks_count
