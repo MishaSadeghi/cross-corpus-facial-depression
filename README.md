@@ -10,12 +10,8 @@ Code for the paper:
 
 This repository contains the analysis pipeline for a bidirectional cross-corpus study of
 facial depression assessment. We pair a structured randomised controlled trial (RCT)
-corpus with a naturalistic clinical interview corpus (E-DAIC) and evaluate
+corpus with a semi-structured interview corpus (E-DAIC) and evaluate
 continuous PHQ-8 severity regression and binary MDD classification in both transfer directions.
-
-Features are extracted with OpenFace 2.1.0 (AUs, gaze angles, head pose) and summarised
-into per-participant feature vectors using 18 statistical functionals. All experiments use
-an 882-dimensional shared feature set obtained by intersecting the two corpora's column sets.
 
 ---
 
@@ -25,7 +21,7 @@ an 882-dimensional shared feature set obtained by intersecting the two corpora's
 pip install scikit-learn xgboost lightgbm catboost scipy numpy pandas joblib shap matplotlib seaborn
 ```
 
-Python 3.8+. LightGBM and CatBoost are optional (gracefully skipped if not installed).
+Python 3.8+. LightGBM and CatBoost are optional (skipped if not installed).
 
 ---
 
@@ -56,15 +52,11 @@ RESULTS_ROOT         = "/path/to/output/"
 
 **ProposedCorpus** — structured RCT with N=256 participants (128 MDD, 128 HC),
 SCID-5-CV diagnosis, 4 intervention conditions × 4 experimental phases.
-Features are pre-aggregated per phase/condition. PHQ-8 used as regression target.
+Features are pre-aggregated per phase/condition. PHQ-8 was used as the main regression target.
 
-**E-DAIC** — Extended Distress Analysis Interview Corpus, N=275 participants,
-unstructured ~20-minute clinical interview. PHQ-8 ≥ 10 as depression threshold.
+**E-DAIC** — [Extended Distress Analysis Interview Corpus] (https://dcapswoz.ict.usc.edu/), N=275 participants,
+semi-structured interview. PHQ-8 ≥ 10 as depression threshold.
 Official train+dev (n=219) / test (n=56) split used throughout.
-
-The two corpora share OpenFace 2.1.0 as the feature extractor and PHQ-8 as the
-label instrument, but differ in elicitation context, language/culture, diagnosis
-protocol, and class balance.
 
 ---
 
@@ -75,18 +67,16 @@ Run in order:
 | Script | Description |
 |--------|-------------|
 | `01_aggregate_edaic_video_features.py` | Aggregate E-DAIC raw OpenFace frame-level CSVs → one row per participant |
-| `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on ProposedCorpus (fixed holdout, all 7 targets) |
-| `within_corpus_regression/nested_cv_phq8_regression.py` | Within-corpus multi-scale regression (5-fold nested CV, all 7 targets) |
-| `02_holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
-| `03_cross_corpus_video_regression.py` | Cross-corpus regression (Exp A, B, C1, C2) |
-| `04_repeated_holdout_regression.py` | Repeated holdout stability analysis |
-| `05_cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
-| `06_cross_corpus_regression_v2.py` | Cross-corpus regression v2 with within-corpus baselines (D1, D2) |
-| `07_cross_corpus_classification_phq8.py` | Cross-corpus classification (PHQ-8 labels, Setting 2) |
-| `08_full_to_full_regression.py` | Full-corpus regression without held-out split |
-| `09_full_to_full_classification.py` | Full-corpus classification without held-out split |
-| `10_shap_cross_corpus_cls.py` | SHAP beeswarm plots for the two best cross-corpus classifiers |
-| `11_result_visualizations.py` | AUC heatmap, domain-gap slope chart, Setting 1 vs 2 scatter |
+| `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on ProposedCorpus (fixed holdout, all regression targets) |
+| `within_corpus_regression/nested_cv_phq8_regression.py` | Within-corpus multi-scale regression (5-fold nested CV, all regression targets) |
+| `01_holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
+| `02_cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
+| `03_cross_corpus_regression.py` | Cross-corpus regression with within-corpus baselines |
+| `04_cross_corpus_classification_phq8.py` | Cross-corpus classification (PHQ-8-based labels, Setting 2) |
+| `05_full_to_full_regression.py` | Full-corpus regression without held-out split |
+| `06_full_to_full_classification.py` | Full-corpus classification without held-out split |
+| `07_shap_cross_corpus_cls.py` | SHAP beeswarm plots for the two best cross-corpus classifiers |
+| `08_result_visualizations.py` | AUC heatmap, domain-gap slope chart, Setting 1 vs 2 scatter |
 
 ### Shared library
 
@@ -98,7 +88,7 @@ feature selection, the full regressor/classifier grid, and evaluation utilities.
 ## Regression Targets
 
 The within-corpus regression scripts (`holdout_phq8_regression.py`,
-`nested_cv_phq8_regression.py`) evaluate all 7 depression severity scales available
+`nested_cv_phq8_regression.py`) evaluate all depression severity scales available
 in ProposedCorpus:
 
 | Column | Scale | Administration |
@@ -134,8 +124,6 @@ python within_corpus_regression/nested_cv_phq8_regression.py \
 **Two label settings** (classification only):
 - Setting 1: SCID-5-CV labels for ProposedCorpus, PHQ-8 ≥ 10 for E-DAIC
 - Setting 2: PHQ-8 ≥ 10 for both corpora
-
-**Metrics:** CCC (primary regression), AUC (primary classification), macro-F1 (secondary)
 
 ---
 
