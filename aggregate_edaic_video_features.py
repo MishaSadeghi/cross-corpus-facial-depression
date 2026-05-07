@@ -1,7 +1,7 @@
 """
 01_aggregate_edaic_video_features.py
 =====================================
-Aggregates per-participant frame-level E-DAIC OpenFace 2.1.0 CSVs into a
+Aggregates per-participant frame-level E-DAIC OpenFace CSVs into a
 single-row-per-participant feature matrix using the same 18 statistical
 functionals as the ProposedCorpus pipeline — producing directly comparable columns.
 
