@@ -1,10 +1,6 @@
 # KDD AI4Mental 2026 — Cross-Corpus Facial Biomarkers of Depression
 
 **Workshop**: AI for Cognitive and Mental Health Support (AI4Mental) @ KDD 2026
-**Date**: August 9, 2026, Jeju, South Korea
-**Deadline**: April 30, 2026
-**Page limit**: 4–6 pages
-**Submission pillar**: "AI as Assessment"
 
 ---
 
