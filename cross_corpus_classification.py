@@ -1,5 +1,5 @@
 """
-05_cross_corpus_classification.py
+cross_corpus_classification.py
 =====================================
 Cross-corpus depression CLASSIFICATION: ProposedCorpus RCT ↔ E-DAIC.
 Binary labels: ProposedCorpus SCID-5-CV (0=HC, 1=MDD), E-DAIC depressed (0/1).

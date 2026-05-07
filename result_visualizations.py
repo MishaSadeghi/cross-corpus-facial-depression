@@ -1,5 +1,5 @@
 """
-11_result_visualizations.py
+result_visualizations.py
 ============================
 Three publication-quality result figures:
 

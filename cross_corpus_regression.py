@@ -1,5 +1,5 @@
 """
-06_cross_corpus_regression_v2.py
+cross_corpus_regression.py
 =====================================
 Cross-corpus PHQ-8 regression: ProposedCorpus RCT ↔ E-DAIC.
 Parallel structure to 05_cross_corpus_classification.py so both result tables

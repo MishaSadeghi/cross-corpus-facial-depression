@@ -1,5 +1,5 @@
 """
-08_full_to_full_regression.py
+full_to_full_regression.py
 =====================================
 Two additional cross-corpus experiments where one corpus is used in full
 (no holdout) for training and the other corpus is used in full for testing.
