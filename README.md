@@ -1,7 +1,7 @@
 # Cross-Corpus Facial Biomarkers of Depression
 
 Code for the paper:
-> **Context-Dependent Facial Biomarkers of Depression: From Clinical RCT to Cross-Corpus Generalization**
+> **Do Depressive Facial Patterns Transfer Across Cultures and Contexts? Evidence from a German RCT and E-DAIC**
 > Submitted to the Workshop on AI for Cognitive and Mental Health Support (AI4Mental) @ KDD 2026.
 
 ---
