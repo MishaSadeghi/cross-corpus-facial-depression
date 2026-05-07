@@ -66,17 +66,17 @@ Run in order:
 
 | Script | Description |
 |--------|-------------|
-| `01_aggregate_edaic_video_features.py` | Aggregate E-DAIC raw OpenFace frame-level CSVs → one row per participant |
+| `aggregate_edaic_video_features.py` | Aggregate E-DAIC raw OpenFace frame-level CSVs → one row per participant |
 | `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on ProposedCorpus (fixed holdout, all regression targets) |
 | `within_corpus_regression/nested_cv_phq8_regression.py` | Within-corpus multi-scale regression (5-fold nested CV, all regression targets) |
-| `01_holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
-| `02_cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
-| `03_cross_corpus_regression.py` | Cross-corpus regression with within-corpus baselines |
-| `04_cross_corpus_classification_phq8.py` | Cross-corpus classification (PHQ-8-based labels, Setting 2) |
-| `05_full_to_full_regression.py` | Full-corpus regression without held-out split |
-| `06_full_to_full_classification.py` | Full-corpus classification without held-out split |
-| `07_shap_cross_corpus_cls.py` | SHAP beeswarm plots for the two best cross-corpus classifiers |
-| `08_result_visualizations.py` | AUC heatmap, domain-gap slope chart, Setting 1 vs 2 scatter |
+| `holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
+| `cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
+| `cross_corpus_regression.py` | Cross-corpus regression with within-corpus baselines |
+| `cross_corpus_classification_phq8.py` | Cross-corpus classification (PHQ-8-based labels, Setting 2) |
+| `full_to_full_regression.py` | Full-corpus regression without held-out split |
+| `full_to_full_classification.py` | Full-corpus classification without held-out split |
+| `shap_cross_corpus_cls.py` | SHAP beeswarm plots for the two best cross-corpus classifiers |
+| `result_visualizations.py` | AUC heatmap, domain-gap slope chart, Setting 1 vs 2 scatter |
 
 ### Shared library
 
