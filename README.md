@@ -51,7 +51,7 @@ RESULTS_ROOT         = "/path/to/output/"
 
 ## Data
 
-**ProposedCorpus** — structured RCT with N=256 participants (128 MDD, 128 HC),
+**EmpkinS-EKSpression** — Proposed Corpus: structured RCT with N=256 participants (128 MDD, 128 HC),
 SCID-5-CV diagnosis, 4 intervention conditions × 4 experimental phases.
 Features are pre-aggregated per phase/condition. PHQ-8 was used as the main regression target.
 
@@ -68,7 +68,7 @@ Run in order:
 | Script | Description |
 |--------|-------------|
 | `aggregate_edaic_video_features.py` | Aggregate E-DAIC raw OpenFace frame-level CSVs → one row per participant |
-| `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on ProposedCorpus (fixed holdout, all regression targets) |
+| `within_corpus_regression/holdout_phq8_regression.py` | Within-corpus multi-scale regression on EmpkinS-EKSpression (fixed holdout, all regression targets) |
 | `within_corpus_regression/nested_cv_phq8_regression.py` | Within-corpus multi-scale regression (5-fold nested CV, all regression targets) |
 | `holdout_regression_phq8.py` | Within-corpus PHQ-8 regression — extended version with cross-corpus feature restriction |
 | `cross_corpus_classification.py` | Cross-corpus binary classification (SCID labels, Setting 1) |
@@ -90,7 +90,7 @@ feature selection, the full regressor/classifier grid, and evaluation utilities.
 
 The within-corpus regression scripts (`holdout_phq8_regression.py`,
 `nested_cv_phq8_regression.py`) evaluate all depression severity scales available
-in ProposedCorpus:
+in EmpkinS-EKSpression:
 
 | Column | Scale | Administration |
 |--------|-------|----------------|
@@ -113,17 +113,17 @@ python within_corpus_regression/nested_cv_phq8_regression.py \
 
 ## Experimental Design
 
-**Seven source configurations** (phase × condition combinations from ProposedCorpus):
+**Seven source configurations** (phase × condition combinations from EmpkinS-EKSpression):
 `Prep./AFE`, `Prep./SHAM`, `Prep./All`, `Pos./AFE`, `Neg./CR+AFE`, `Neg./CR`, `Neg./SHAM`
 
 **Cross-corpus experiments:**
-- **Exp A** — ProposedCorpus ALL → E-DAIC test (maximum training data)
-- **Exp B** — E-DAIC train+dev → ProposedCorpus test
-- **Exp C1** — ProposedCorpus train (80%) → E-DAIC test
+- **Exp A** — EmpkinS-EKSpression ALL → E-DAIC test (maximum training data)
+- **Exp B** — E-DAIC train+dev → EmpkinS-EKSpression test
+- **Exp C1** — EmpkinS-EKSpression train (80%) → E-DAIC test
 - **Exp D1/D2** — Within-corpus baselines
 
 **Two label settings** (classification only):
-- Setting 1: SCID-5-CV labels for ProposedCorpus, PHQ-8 ≥ 10 for E-DAIC
+- Setting 1: SCID-5-CV labels for EmpkinS-EKSpression, PHQ-8 ≥ 10 for E-DAIC
 - Setting 2: PHQ-8 ≥ 10 for both corpora
 
 ---
