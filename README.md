@@ -2,7 +2,8 @@
 
 Code for the paper:
 > **Do Depressive Facial Patterns Transfer Across Cultures and Contexts? Evidence from a German RCT and E-DAIC**
-> Submitted to the Workshop on AI for Cognitive and Mental Health Support (AI4Mental) @ KDD 2026.
+
+> Accepted at Workshop on AI for Cognitive and Mental Health Support (AI4Mental) @ KDD 2026.
 
 ---
 
